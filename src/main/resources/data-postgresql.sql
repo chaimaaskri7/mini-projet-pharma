@@ -181,3 +181,25 @@ INSERT INTO LIGNE (COMMANDE_NUMERO, MEDICAMENT_REFERENCE, QUANTITE) VALUES
 (6, 6, 110), (6, 16, 65), (6, 26, 85), (6, 36, 60), (6, 91, 70),
 (7, 7, 80), (7, 17, 50), (7, 27, 95), (7, 37, 55), (7, 100, 45),
 (8, 8, 100), (8, 18, 75), (8, 28, 80), (8, 38, 70), (8, 48, 60);
+-- Insertion des fournisseurs
+INSERT INTO FOURNISSEUR (NOM, EMAIL) VALUES
+('Pharma Plus', 'contact+pharmaplus@gmail.com'),
+('Medis Distribution', 'contact+medisdist@gmail.com'),
+('ChemiExpress', 'contact+chemiexpress@gmail.com'),
+('ProPharm', 'contact+propharm@gmail.com'),
+('MediSupply', 'contact+medisupply@gmail.com');
+ALTER SEQUENCE fournisseur_id_seq RESTART WITH 6;
+
+-- Association fournisseur-catégorie (chaque catégorie a au moins 2 fournisseurs)
+-- Chaque fournisseur peut fournir plusieurs catégories
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_ID) VALUES
+-- Pharma Plus fournit : Antalgiques, Anti-inflammatoires, Antibiotiques
+(1, 1), (1, 2), (1, 3),
+-- Medis Distribution fournit : Antalgiques, Antihypertenseurs, Antidiabétiques
+(2, 1), (2, 4), (2, 5),
+-- ChemiExpress fournit : Anti-inflammatoires, Antibiotiques, Antihistaminiques
+(3, 2), (3, 3), (3, 6),
+-- ProPharm fournit : Antihypertenseurs, Antidiabétiques, Vitamines
+(4, 4), (4, 5), (4, 7),
+-- MediSupply fournit : Antihistaminiques, Vitamines, Médicaments Cardiovasculaires
+(5, 6), (5, 7), (5, 8);

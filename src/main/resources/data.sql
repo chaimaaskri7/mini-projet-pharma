@@ -144,7 +144,8 @@ INSERT INTO MEDICAMENT (NOM, CATEGORIE_CODE, QUANTITE_PAR_UNITE, PRIX_UNITAIRE, 
 ('Acétylcystéine 600mg', 10, 'Boîte de 20 sachets', 6.20, 320, 0, 32, false, 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400'),
 ('Bromhexine 8mg', 10, 'Sirop 200ml', 5.50, 280, 0, 28, false, 'https://images.unsplash.com/photo-1550572017-edd951aa8f72?w=400'),
 ('Théophylline 200mg', 10, 'Boîte de 30 comprimés', 8.90, 150, 0, 15, false, 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400'),
-('Prednisone 20mg', 10, 'Boîte de 20 comprimés', 3.80, 400, 0, 40, false, 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400');
+('Prednisone 20mg', 10, 'Boîte de 20 comprimés', 3.80, 400, 0, 40, false, 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400'),
+('📧 TEST EMAIL ASKRICHAYMA7', 1, 'Boîte de 1 unité', 9.99, 0, 0, 50, false, NULL);
 
 -- Insertion des dispensaires
 INSERT INTO DISPENSAIRE (CODE, NOM, CONTACT, FONCTION, ADRESSE, CODE_POSTAL, VILLE, REGION, PAYS, TELEPHONE, FAX) VALUES
@@ -181,3 +182,28 @@ INSERT INTO LIGNE (COMMANDE_NUMERO, MEDICAMENT_REFERENCE, QUANTITE) VALUES
 (6, 6, 110), (6, 16, 65), (6, 26, 85), (6, 36, 60), (6, 91, 70),
 (7, 7, 80), (7, 17, 50), (7, 27, 95), (7, 37, 55), (7, 100, 45),
 (8, 8, 100), (8, 18, 75), (8, 28, 80), (8, 38, 70), (8, 48, 60);
+-- Insertion des fournisseurs
+INSERT INTO FOURNISSEUR (NOM, EMAIL) VALUES
+('Pharma Plus', 'contact+pharmaplus@gmail.com'),
+('Medis Distribution', 'contact+medisdist@gmail.com'),
+('ChemiExpress', 'contact+chemiexpress@gmail.com'),
+('ProPharm', 'contact+propharm@gmail.com'),
+('MediSupply', 'contact+medisupply@gmail.com'),
+('Test Personnel', 'chaima.askri@etud.univ-jfc.fr');
+ALTER TABLE FOURNISSEUR ALTER COLUMN id RESTART WITH 7;
+
+-- Association fournisseur-catégorie (chaque catégorie a au moins 2 fournisseurs)
+-- Chaque fournisseur peut fournir plusieurs catégories
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_ID) VALUES
+-- Pharma Plus fournit : Antalgiques, Anti-inflammatoires, Antibiotiques, Gastro-intestinaux
+(1, 1), (1, 2), (1, 3), (1, 9),
+-- Medis Distribution fournit : Antalgiques, Antihypertenseurs, Antidiabétiques, Gastro-intestinaux
+(2, 1), (2, 4), (2, 5), (2, 9),
+-- ChemiExpress fournit : Anti-inflammatoires, Antibiotiques, Antihistaminiques, Respiratoires
+(3, 2), (3, 3), (3, 6), (3, 10),
+-- ProPharm fournit : Antihypertenseurs, Antidiabétiques, Vitamines, Respiratoires
+(4, 4), (4, 5), (4, 7), (4, 10),
+-- MediSupply fournit : Antihistaminiques, Vitamines, Médicaments Cardiovasculaires, Antalgiques
+(5, 6), (5, 7), (5, 8), (5, 1),
+-- Test Personnel (askrichayma7@gmail.com) fournit : Tous les produits !
+(6, 1), (6, 2), (6, 3), (6, 4), (6, 5), (6, 6), (6, 7), (6, 8), (6, 9), (6, 10);
