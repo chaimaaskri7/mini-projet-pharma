@@ -25,15 +25,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@RequiredArgsConstructor
 @ToString
 public class Medicament {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Setter(AccessLevel.NONE) // la clé est autogénérée par la BD, On ne veut pas de "setter"
 	private Integer reference = null;
 
 	@NonNull // Lombok, génère une vérification dans le constructeur par défaut
@@ -95,5 +90,91 @@ public class Medicament {
 	@OneToMany(mappedBy = "medicament", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH,
 			CascadeType.REMOVE }, orphanRemoval = true)
 	private List<Ligne> lignes = new LinkedList<>();
+
+	// Getters
+	public Integer getReference() {
+		return reference;
+	}
+
+	public String getNom() {
+		return nom;
+	}
+
+	public String getQuantiteParUnite() {
+		return quantiteParUnite;
+	}
+
+	public BigDecimal getPrixUnitaire() {
+		return prixUnitaire;
+	}
+
+	public int getUnitesEnStock() {
+		return unitesEnStock;
+	}
+
+	public int getUnitesCommandees() {
+		return unitesCommandees;
+	}
+
+	public int getNiveauDeReappro() {
+		return niveauDeReappro;
+	}
+
+	public boolean isIndisponible() {
+		return indisponible;
+	}
+
+	public String getImageURL() {
+		return imageURL;
+	}
+
+	public Categorie getCategorie() {
+		return categorie;
+	}
+
+	public List<Ligne> getLignes() {
+		return lignes;
+	}
+
+	// Setters
+	public void setNom(String nom) {
+		this.nom = nom;
+	}
+
+	public void setQuantiteParUnite(String quantiteParUnite) {
+		this.quantiteParUnite = quantiteParUnite;
+	}
+
+	public void setPrixUnitaire(BigDecimal prixUnitaire) {
+		this.prixUnitaire = prixUnitaire;
+	}
+
+	public void setUnitesEnStock(int unitesEnStock) {
+		this.unitesEnStock = unitesEnStock;
+	}
+
+	public void setUnitesCommandees(int unitesCommandees) {
+		this.unitesCommandees = unitesCommandees;
+	}
+
+	public void setNiveauDeReappro(int niveauDeReappro) {
+		this.niveauDeReappro = niveauDeReappro;
+	}
+
+	public void setIndisponible(boolean indisponible) {
+		this.indisponible = indisponible;
+	}
+
+	public void setImageURL(String imageURL) {
+		this.imageURL = imageURL;
+	}
+
+	public void setCategorie(Categorie categorie) {
+		this.categorie = categorie;
+	}
+
+	public void setLignes(List<Ligne> lignes) {
+		this.lignes = lignes;
+	}
 
 }

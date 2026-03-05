@@ -11,15 +11,10 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@RequiredArgsConstructor
 @ToString
 public class Categorie {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Setter(AccessLevel.NONE) // la clé est auto-générée par la BD, On ne veut pas de "setter"
 	private Integer code;
 
 	@NonNull
@@ -45,5 +40,48 @@ public class Categorie {
 	@ManyToMany(mappedBy = "categories")
 	@JsonIgnoreProperties("categories")
 	private List<Fournisseur> fournisseurs = new LinkedList<>();
+
+	// Constructeur avec libelle (Lombok @RequiredArgsConstructor)
+	public Categorie(String libelle) {
+		this.libelle = libelle;
+	}
+
+	// Getters
+	public Integer getCode() {
+		return code;
+	}
+
+	public String getLibelle() {
+		return libelle;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public List<Medicament> getMedicaments() {
+		return medicaments;
+	}
+
+	public List<Fournisseur> getFournisseurs() {
+		return fournisseurs;
+	}
+
+	// Setters
+	public void setLibelle(String libelle) {
+		this.libelle = libelle;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setMedicaments(List<Medicament> medicaments) {
+		this.medicaments = medicaments;
+	}
+
+	public void setFournisseurs(List<Fournisseur> fournisseurs) {
+		this.fournisseurs = fournisseurs;
+	}
 
 }

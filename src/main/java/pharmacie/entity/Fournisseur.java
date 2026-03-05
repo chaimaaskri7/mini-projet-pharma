@@ -9,15 +9,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@RequiredArgsConstructor
 @ToString
 public class Fournisseur {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(AccessLevel.NONE)
     private Integer id;
 
     @NonNull
@@ -30,10 +25,44 @@ public class Fournisseur {
     @Column(length = 255, unique = true)
     private String email;
 
-    // Un fournisseur peut fournir plusieurs catégories
-    // Une catégorie est fournie par plusieurs fournisseurs
     @ToString.Exclude
     @ManyToMany
     @JoinTable(name = "fournisseur_categorie", joinColumns = @JoinColumn(name = "fournisseur_id"), inverseJoinColumns = @JoinColumn(name = "categorie_id"))
     private List<Categorie> categories = new LinkedList<>();
+
+    // Constructeur pour @RequiredArgsConstructor
+    public Fournisseur(String nom, String email) {
+        this.nom = nom;
+        this.email = email;
+    }
+
+    // Getters
+    public Integer getId() {
+        return id;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public List<Categorie> getCategories() {
+        return categories;
+    }
+
+    // Setters
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setCategories(List<Categorie> categories) {
+        this.categories = categories;
+    }
 }

@@ -1,6 +1,8 @@
 package pharmacie.rest;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,8 @@ import org.springframework.lang.NonNull;
 @Slf4j
 public class ImageUploadController {
 
+    private static final Logger log = LoggerFactory.getLogger(ImageUploadController.class);
+
     private final MedicamentRepository medicamentRepository;
 
     // Chemin vers le répertoire static/images
@@ -36,8 +40,9 @@ public class ImageUploadController {
 
     /**
      * Upload une image pour un médicament
+     * 
      * @param reference la référence du médicament
-     * @param file le fichier image à uploader
+     * @param file      le fichier image à uploader
      * @return ResponseEntity avec le résultat de l'opération
      */
     @PostMapping("/{reference}/image")
@@ -105,10 +110,9 @@ public class ImageUploadController {
             response.put("message", "Image uploadée avec succès");
             response.put("imageUrl", imageUrl);
             response.put("medicament", Map.of(
-                "reference", medicament.getReference(),
-                "nom", medicament.getNom(),
-                "imageURL", medicament.getImageURL()
-            ));
+                    "reference", medicament.getReference(),
+                    "nom", medicament.getNom(),
+                    "imageURL", medicament.getImageURL()));
 
             return ResponseEntity.ok(response);
 
@@ -127,6 +131,7 @@ public class ImageUploadController {
 
     /**
      * Récupérer les informations d'un médicament y compris son image
+     * 
      * @param reference la référence du médicament
      * @return ResponseEntity avec les informations du médicament
      */
@@ -144,13 +149,12 @@ public class ImageUploadController {
 
             response.put("success", true);
             response.put("medicament", Map.of(
-                "reference", medicament.getReference(),
-                "nom", medicament.getNom(),
-                "imageURL", medicament.getImageURL() != null ? medicament.getImageURL() : "",
-                "prixUnitaire", medicament.getPrixUnitaire(),
-                "unitesEnStock", medicament.getUnitesEnStock(),
-                "categorie", medicament.getCategorie().getLibelle()
-            ));
+                    "reference", medicament.getReference(),
+                    "nom", medicament.getNom(),
+                    "imageURL", medicament.getImageURL() != null ? medicament.getImageURL() : "",
+                    "prixUnitaire", medicament.getPrixUnitaire(),
+                    "unitesEnStock", medicament.getUnitesEnStock(),
+                    "categorie", medicament.getCategorie().getLibelle()));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

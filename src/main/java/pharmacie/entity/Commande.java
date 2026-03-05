@@ -13,17 +13,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@RequiredArgsConstructor
 @ToString
 public class Commande {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Basic(optional = false)
 	@Column(nullable = false)
-	@Setter(AccessLevel.NONE) // la clé est auto-générée par la BD, On ne veut pas de "setter"
 	private Integer numero;
 
 	@Basic(optional = false)
@@ -34,8 +29,6 @@ public class Commande {
 	@Basic(optional = true)
 	private LocalDate envoyeele = null;
 
-	// @Max(value=?) @Min(value=?)//if you know range of your decimal fields
-	// consider using these annotations to enforce field validation
 	@Column(precision = 18, scale = 2)
 	@ToString.Exclude
 	private BigDecimal port;
@@ -52,12 +45,87 @@ public class Commande {
 	private BigDecimal remise = BigDecimal.ZERO;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "commande", orphanRemoval = true)
-	@JsonIgnoreProperties({"commande"})
+	@JsonIgnoreProperties({ "commande" })
 	private List<Ligne> lignes = new LinkedList<>();
 
 	@ManyToOne(optional = false)
 	@NonNull
-	@JsonIgnoreProperties({"commandes"})
+	@JsonIgnoreProperties({ "commandes" })
 	private Dispensaire dispensaire;
+
+	// Constructeur pour @RequiredArgsConstructor (Dispensaire est @NonNull)
+	public Commande(Dispensaire dispensaire) {
+		this.dispensaire = dispensaire;
+	}
+
+	// Getters
+	public Integer getNumero() {
+		return numero;
+	}
+
+	public LocalDate getSaisiele() {
+		return saisiele;
+	}
+
+	public LocalDate getEnvoyeele() {
+		return envoyeele;
+	}
+
+	public BigDecimal getPort() {
+		return port;
+	}
+
+	public String getDestinataire() {
+		return destinataire;
+	}
+
+	public AdressePostale getAdresseLivraison() {
+		return adresseLivraison;
+	}
+
+	public BigDecimal getRemise() {
+		return remise;
+	}
+
+	public List<Ligne> getLignes() {
+		return lignes;
+	}
+
+	public Dispensaire getDispensaire() {
+		return dispensaire;
+	}
+
+	// Setters
+	public void setSaisiele(LocalDate saisiele) {
+		this.saisiele = saisiele;
+	}
+
+	public void setEnvoyeele(LocalDate envoyeele) {
+		this.envoyeele = envoyeele;
+	}
+
+	public void setPort(BigDecimal port) {
+		this.port = port;
+	}
+
+	public void setDestinataire(String destinataire) {
+		this.destinataire = destinataire;
+	}
+
+	public void setAdresseLivraison(AdressePostale adresseLivraison) {
+		this.adresseLivraison = adresseLivraison;
+	}
+
+	public void setRemise(BigDecimal remise) {
+		this.remise = remise;
+	}
+
+	public void setLignes(List<Ligne> lignes) {
+		this.lignes = lignes;
+	}
+
+	public void setDispensaire(Dispensaire dispensaire) {
+		this.dispensaire = dispensaire;
+	}
 
 }

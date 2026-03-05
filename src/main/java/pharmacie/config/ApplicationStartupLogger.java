@@ -1,5 +1,7 @@
 package pharmacie.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.lang.NonNull;
@@ -11,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class ApplicationStartupLogger implements ApplicationListener<WebServerInitializedEvent> {
+    private static final Logger log = LoggerFactory.getLogger(ApplicationStartupLogger.class);
+
     @SuppressWarnings("null")
     @Override
     public void onApplicationEvent(@NonNull WebServerInitializedEvent event) {

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +25,9 @@ import pharmacie.entity.Ligne;
 @Validated // Les annotations de validation sont actives sur les méthodes de ce service
 // (ex: @Positive)
 public class CommandeService {
-    // La couche "Service" utilise la couche "Accès aux données" pour effectuer les traitements
+    private static final Logger log = LoggerFactory.getLogger(CommandeService.class);
+    // La couche "Service" utilise la couche "Accès aux données" pour effectuer les
+    // traitements
     private final CommandeRepository commandeDao;
     private final DispensaireRepository dispensaireDao;
     private final LigneRepository ligneDao;
@@ -31,7 +35,8 @@ public class CommandeService {
 
     // @Autowired
     // Spring initialisera automatiquement ces paramètres
-    public CommandeService(CommandeRepository commandeDao, DispensaireRepository dispensaireDao, LigneRepository ligneDao, MedicamentRepository medicamentDao) {
+    public CommandeService(CommandeRepository commandeDao, DispensaireRepository dispensaireDao,
+            LigneRepository ligneDao, MedicamentRepository medicamentDao) {
         this.commandeDao = commandeDao;
         this.dispensaireDao = dispensaireDao;
         this.ligneDao = ligneDao;
@@ -39,11 +44,13 @@ public class CommandeService {
     }
 
     /**
-     * Service métier : Enregistre une nouvelle commande pour un dispensaire connu par sa clé
+     * Service métier : Enregistre une nouvelle commande pour un dispensaire connu
+     * par sa clé
      * Règles métier :
      * - le dispensaire doit exister
      * - On initialise l'adresse de livraison avec l'adresse du dispensaire
-     * - Si le dispensaire a déjà commandé plus de 100 articles, on lui offre une remise de 15%
+     * - Si le dispensaire a déjà commandé plus de 100 articles, on lui offre une
+     * remise de 15%
      *
      * @param dispensaireCode la clé du dispensaire
      * @return la commande créée
@@ -58,7 +65,8 @@ public class CommandeService {
         var nouvelleCommande = new Commande(dispensaire);
         // On initialise l'adresse de livraison avec l'adresse du dispensaire
         nouvelleCommande.setAdresseLivraison(dispensaire.getAdresse());
-        // Si le dispensaire a déjà commandé plus de 100 médicaments, on lui offre une remise de 15%
+        // Si le dispensaire a déjà commandé plus de 100 médicaments, on lui offre une
+        // remise de 15%
         // La requête SQL nécessaire est définie dans l'interface DispensaireRepository
         var nbArticles = dispensaireDao.nombreArticlesCommandesPar(dispensaireCode);
         if (nbArticles > 100) {
@@ -72,23 +80,30 @@ public class CommandeService {
     /**
      * <pre>
      * Service métier :
-     * Enregistre une nouvelle ligne de commande pour une commande connue par sa clé,
-     * Incrémente la quantité totale commandée (Medicament.unitesCommandees) avec la quantite à commander
+     * Enregistre une nouvelle ligne de commande pour une commande connue par sa
+     * clé,
+     * Incrémente la quantité totale commandée (Medicament.unitesCommandees) avec la
+     * quantite à commander
      * Règles métier :
      * - le médicament référencé doit exister et ne pas être indisponible
      * - la commande doit exister
-     * - la commande ne doit pas être déjà envoyée (le champ 'envoyeele' doit être null)
+     * - la commande ne doit pas être déjà envoyée (le champ 'envoyeele' doit être
+     * null)
      * - la quantité doit être positive
-     * - La quantité en stock du médicament ne doit pas être inférieure au total des quantités commandées
-     * - Si le médicament est déjà présent dans la commande, les quantités sont additionnées
+     * - La quantité en stock du médicament ne doit pas être inférieure au total des
+     * quantités commandées
+     * - Si le médicament est déjà présent dans la commande, les quantités sont
+     * additionnées
+     * 
      * <pre>
      *
-     * @param commandeNum la clé de la commande
-     * @param medicamentRef  la clé du médicament
-     * @param quantite    la quantité commandée (positive)
+     * @param commandeNum   la clé de la commande
+     * @param medicamentRef la clé du médicament
+     * @param quantite      la quantité commandée (positive)
      * @return la ligne de commande créée
      * @throws java.util.NoSuchElementException                si la commande ou le
-     *                                                         médicament n'existe pas
+     *                                                         médicament n'existe
+     *                                                         pas
      * @throws IllegalStateException                           si il n'y a pas assez
      *                                                         de stock, si la
      *                                                         commande a déjà été
@@ -125,7 +140,8 @@ public class CommandeService {
         ligne.setQuantite(ligne.getQuantite() + quantite);
         // On incrémente la quantité commandée pour le médicament
         medicament.setUnitesCommandees(medicament.getUnitesCommandees() + quantite);
-        // Inutile de sauvegarder le médicament, les entités modifiées par une transaction
+        // Inutile de sauvegarder le médicament, les entités modifiées par une
+        // transaction
         // sont automatiquement sauvegardées à la fin de la transaction
         // On enregistre la ligne de commande (génère la clé)
         return ligneDao.save(ligne);
@@ -135,9 +151,12 @@ public class CommandeService {
      * <pre>
      * Service métier :
      * Supprime une ligne de commande pour une commande connue par sa clé,
-     * Décrémente la quantité totale commandée (Medicament.unitesCommandees) de la quantité commandée
+     * Décrémente la quantité totale commandée (Medicament.unitesCommandees) de la
+     * quantité commandée
      * Règles métier :
-     * - la commande ne doit pas être déjà envoyée (le champ 'envoyeele' doit être null)
+     * - la commande ne doit pas être déjà envoyée (le champ 'envoyeele' doit être
+     * null)
+     * 
      * <pre>
      *
      * @param id la clé de la ligne
@@ -159,7 +178,8 @@ public class CommandeService {
             medicament.setUnitesCommandees(medicament.getUnitesCommandees() - ligne.getQuantite());
             // On supprime la ligne
             ligneDao.delete(ligne);
-            // Inutile de sauvegarder le médicament, les entités modifiées par une transaction
+            // Inutile de sauvegarder le médicament, les entités modifiées par une
+            // transaction
             // sont automatiquement sauvegardées à la fin de la transaction
         });
     }
@@ -168,11 +188,14 @@ public class CommandeService {
      * Service métier : Enregistre l'expédition d'une commande connue par sa clé
      * Règles métier :
      * - la commande doit exister
-     * - la commande ne doit pas être déjà envoyée (le champ 'envoyeele' doit être null)
+     * - la commande ne doit pas être déjà envoyée (le champ 'envoyeele' doit être
+     * null)
      * - On renseigne la date d'expédition (envoyeele) avec la date du jour
      * - Pour chaque médicament dans les lignes de la commande :
-     * décrémente la quantité en stock (Medicament.unitesEnStock) de la quantité dans la commande
-     * décrémente la quantité commandée (Medicament.unitesCommandees) de la quantité dans la commande
+     * décrémente la quantité en stock (Medicament.unitesEnStock) de la quantité
+     * dans la commande
+     * décrémente la quantité commandée (Medicament.unitesCommandees) de la quantité
+     * dans la commande
      *
      * @param commandeNum la clé de la commande
      * @return la commande mise à jour
