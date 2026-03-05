@@ -34,6 +34,10 @@ public class Ligne {
 	@NonNull
 	private Integer quantite;
 
+	// No-arg constructor for JPA and tests
+	public Ligne() {
+	}
+
 	// Constructeur pour @RequiredArgsConstructor
 	public Ligne(Commande commande, Medicament medicament, Integer quantite) {
 		this.commande = commande;

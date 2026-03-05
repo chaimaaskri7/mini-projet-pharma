@@ -91,6 +91,10 @@ public class Medicament {
 			CascadeType.REMOVE }, orphanRemoval = true)
 	private List<Ligne> lignes = new LinkedList<>();
 
+	// No-arg constructor for JPA and tests
+	public Medicament() {
+	}
+
 	// Getters
 	public Integer getReference() {
 		return reference;

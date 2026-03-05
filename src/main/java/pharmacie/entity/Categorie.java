@@ -41,6 +41,10 @@ public class Categorie {
 	@JsonIgnoreProperties("categories")
 	private List<Fournisseur> fournisseurs = new LinkedList<>();
 
+	// No-arg constructor for JPA and tests
+	public Categorie() {
+	}
+
 	// Constructeur avec libelle (Lombok @RequiredArgsConstructor)
 	public Categorie(String libelle) {
 		this.libelle = libelle;

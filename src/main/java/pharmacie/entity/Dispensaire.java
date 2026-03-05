@@ -50,6 +50,10 @@ public class Dispensaire {
     @JsonIgnoreProperties({ "dispensaire", "lignes" })
     private List<Commande> commandes = new ArrayList<>();
 
+    // No-arg constructor for JPA and tests
+    public Dispensaire() {
+    }
+
     // Constructeur pour @RequiredArgsConstructor (code et nom sont @NonNull)
     public Dispensaire(String code, String nom) {
         this.code = code;

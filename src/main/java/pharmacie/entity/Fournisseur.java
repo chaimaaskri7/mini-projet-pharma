@@ -30,6 +30,10 @@ public class Fournisseur {
     @JoinTable(name = "fournisseur_categorie", joinColumns = @JoinColumn(name = "fournisseur_id"), inverseJoinColumns = @JoinColumn(name = "categorie_id"))
     private List<Categorie> categories = new LinkedList<>();
 
+    // No-arg constructor for JPA and tests
+    public Fournisseur() {
+    }
+
     // Constructeur pour @RequiredArgsConstructor
     public Fournisseur(String nom, String email) {
         this.nom = nom;

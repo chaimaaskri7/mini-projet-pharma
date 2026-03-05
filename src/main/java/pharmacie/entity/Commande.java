@@ -53,6 +53,10 @@ public class Commande {
 	@JsonIgnoreProperties({ "commandes" })
 	private Dispensaire dispensaire;
 
+	// No-arg constructor for JPA and tests
+	public Commande() {
+	}
+
 	// Constructeur pour @RequiredArgsConstructor (Dispensaire est @NonNull)
 	public Commande(Dispensaire dispensaire) {
 		this.dispensaire = dispensaire;
