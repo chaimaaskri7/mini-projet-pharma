@@ -114,11 +114,9 @@ public class MedicamentActionController {
             }
 
             // Étape 1: Supprimer toutes les lignes associées au médicament
-            List<Ligne> lignesAssociees = ligneRepository.findByMedicamentReference(reference);
-            if (!lignesAssociees.isEmpty()) {
-                ligneRepository.deleteAll(lignesAssociees);
-                log.info("Supprimé {} lignes associées au médicament {}", lignesAssociees.size(), reference);
-            }
+            // Utilise une requête DELETE directe pour éviter la cascade bidirectionnelle
+            ligneRepository.deleteByMedicamentReference(reference);
+            log.info("Supprimé les lignes associées au médicament {}", reference);
 
             // Étape 2: Supprimer le médicament
             medicamentRepository.deleteById(reference);
