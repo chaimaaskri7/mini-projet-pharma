@@ -3,6 +3,7 @@ package pharmacie.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,7 @@ public class MedicamentDeleteController {
      * Supprime un médicament et ses lignes associées
      * Utilise SQL native pour éviter les cascades bidirectionnelles
      */
+    @Transactional
     @DeleteMapping("/{reference}")
     public ResponseEntity<String> supprimerMedicament(@PathVariable Integer reference) {
         try {
@@ -44,15 +46,18 @@ public class MedicamentDeleteController {
             // Étape 1: Supprimer les lignes via SQL native
             // Cela évite les cascades bidirectionnelles problématiques
             int lignesSupprimees = entityManager.createNativeQuery(
-                    "DELETE FROM LIGNE WHERE medicament_reference = ?1")
+                    "DELETE FROM LIGNE WHERE MEDICAMENT_REFERENCE = ?1")
                     .setParameter(1, reference)
                     .executeUpdate();
 
             log.info("Supprimé {} lignes pour le médicament {}", lignesSupprimees, reference);
 
+            // Force l'exécution de la requête DELETE avant de continuer
+            entityManager.flush();
+
             // Étape 2: Supprimer le médicament via SQL native
             int medicamentsSupprimees = entityManager.createNativeQuery(
-                    "DELETE FROM MEDICAMENT WHERE reference = ?1")
+                    "DELETE FROM MEDICAMENT WHERE REFERENCE = ?1")
                     .setParameter(1, reference)
                     .executeUpdate();
 
