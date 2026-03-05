@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import pharmacie.dao.MedicamentRepository;
-import pharmacie.dao.LigneRepository;
-import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -22,16 +20,14 @@ public class MedicamentDeleteController {
     private static final Logger log = LoggerFactory.getLogger(MedicamentDeleteController.class);
 
     private final MedicamentRepository medicamentRepository;
-    private final EntityManager entityManager;
 
-    public MedicamentDeleteController(MedicamentRepository medicamentRepository, EntityManager entityManager) {
+    public MedicamentDeleteController(MedicamentRepository medicamentRepository) {
         this.medicamentRepository = medicamentRepository;
-        this.entityManager = entityManager;
     }
 
     /**
      * Supprime un médicament et ses lignes associées
-     * Utilise SQL native pour éviter les cascades bidirectionnelles
+     * Approche: charger le médic, vider les lignes, sauvegarder, puis supprimer
      */
     @Transactional
     @DeleteMapping("/{reference}")
@@ -39,31 +35,24 @@ public class MedicamentDeleteController {
         try {
             log.info("Suppression du médicament {}", reference);
 
-            if (!medicamentRepository.existsById(reference)) {
-                return ResponseEntity.notFound().build();
-            }
+            // Étape 1: Charger le médicament avec ses lignes
+            var medicament = medicamentRepository.findById(reference)
+                    .orElseThrow(() -> new RuntimeException("Médicament non trouvé"));
 
-            // Étape 1: Supprimer les lignes via SQL native
-            // Cela évite les cascades bidirectionnelles problématiques
-            int lignesSupprimees = entityManager.createNativeQuery(
-                    "DELETE FROM LIGNE WHERE MEDICAMENT_REFERENCE = ?1")
-                    .setParameter(1, reference)
-                    .executeUpdate();
+            log.info("Médicament trouvé. Voici ses lignes: {}", medicament.getLignes().size());
 
-            log.info("Supprimé {} lignes pour le médicament {}", lignesSupprimees, reference);
+            // Étape 2: Vider la liste des lignes (déclenche orphanRemoval)
+            medicament.getLignes().clear();
 
-            // Force l'exécution de la requête DELETE avant de continuer
-            entityManager.flush();
+            // Étape 3: Sauvegarder le médicament SANS ses lignes
+            medicamentRepository.save(medicament);
+            medicamentRepository.flush();
 
-            // Étape 2: Supprimer le médicament via SQL native
-            int medicamentsSupprimees = entityManager.createNativeQuery(
-                    "DELETE FROM MEDICAMENT WHERE REFERENCE = ?1")
-                    .setParameter(1, reference)
-                    .executeUpdate();
+            log.info("Lignes supprimées via orphanRemoval");
 
-            if (medicamentsSupprimees == 0) {
-                return ResponseEntity.notFound().build();
-            }
+            // Étape 4: Supprimer le médicament
+            medicamentRepository.deleteById(reference);
+            medicamentRepository.flush();
 
             log.info("Médicament {} supprimé avec succès", reference);
             return ResponseEntity.ok("Médicament supprimé avec succès");
