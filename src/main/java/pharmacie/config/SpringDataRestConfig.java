@@ -23,7 +23,7 @@ public class SpringDataRestConfig
             RepositoryRestConfiguration config, CorsRegistry cors) {
         // Expose les id de toutes les entités dans l'API REST
         config.exposeIdsFor(
-            entityManager.getMetamodel()
+                entityManager.getMetamodel()
                         .getEntities()
                         .stream()
                         .map(Type::getJavaType)

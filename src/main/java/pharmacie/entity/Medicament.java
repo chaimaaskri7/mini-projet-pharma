@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PreRemove;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -93,6 +94,16 @@ public class Medicament {
 
 	// No-arg constructor for JPA and tests
 	public Medicament() {
+	}
+
+	/**
+	 * IMPORTANT: Vider les lignes AVANT la suppression pour éviter les conflits
+	 * de contrainte de clé étrangère bidirectionnelle. Ça fonctionne indépendamment
+	 * de la source de suppression (RestController, Spring Data REST, etc.)
+	 */
+	@PreRemove
+	public void preRemove() {
+		this.lignes.clear();
 	}
 
 	// Getters
