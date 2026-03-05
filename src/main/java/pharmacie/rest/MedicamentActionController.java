@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import pharmacie.dao.LigneRepository;
 import pharmacie.dao.MedicamentRepository;
+import pharmacie.entity.Ligne;
 import pharmacie.entity.Medicament;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,9 +25,11 @@ public class MedicamentActionController {
     private static final Logger log = LoggerFactory.getLogger(MedicamentActionController.class);
 
     private final MedicamentRepository medicamentRepository;
+    private final LigneRepository ligneRepository;
 
-    public MedicamentActionController(MedicamentRepository medicamentRepository) {
+    public MedicamentActionController(MedicamentRepository medicamentRepository, LigneRepository ligneRepository) {
         this.medicamentRepository = medicamentRepository;
+        this.ligneRepository = ligneRepository;
     }
 
     /**
@@ -98,6 +102,7 @@ public class MedicamentActionController {
 
     /**
      * Supprime un médicament et ses lignes associées
+     * Supprime d'abord les lignes pour éviter les conflits de clé étrangère
      */
     @DeleteMapping("/{reference}")
     public ResponseEntity<String> supprimerMedicament(@PathVariable Integer reference) {
@@ -106,8 +111,14 @@ public class MedicamentActionController {
                 return ResponseEntity.notFound().build();
             }
 
-            // Supprimer le médicament (les lignes orphelines seront supprimées
-            // automatiquement par JPA)
+            // Étape 1: Supprimer toutes les lignes associées au médicament
+            List<Ligne> lignesAssociees = ligneRepository.findByMedicamentReference(reference);
+            if (!lignesAssociees.isEmpty()) {
+                ligneRepository.deleteAll(lignesAssociees);
+                log.info("Supprimé {} lignes associées au médicament {}", lignesAssociees.size(), reference);
+            }
+
+            // Étape 2: Supprimer le médicament
             medicamentRepository.deleteById(reference);
             log.info("Médicament {} supprimé", reference);
             return ResponseEntity.ok("Médicament supprimé avec succès");
