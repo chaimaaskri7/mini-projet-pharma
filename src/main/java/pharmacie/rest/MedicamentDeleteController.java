@@ -121,15 +121,24 @@ public class MedicamentDeleteController {
 
             // Extraire et valider les données
             String nom = (String) data.get("nom");
-            Integer categorieCode = data.get("categorieCode") instanceof Number
-                    ? ((Number) data.get("categorieCode")).intValue()
-                    : null;
+
+            // Accepter soit categorieCode (number) soit categorie (URL)
+            Integer categorieCode = null;
+            if (data.get("categorieCode") instanceof Number) {
+                categorieCode = ((Number) data.get("categorieCode")).intValue();
+            } else if (data.get("categorie") instanceof String) {
+                // Extraire l'ID de l'URL: "https://.../api/categories/1" -> 1
+                String categorieUrl = (String) data.get("categorie");
+                String[] parts = categorieUrl.split("/");
+                categorieCode = Integer.parseInt(parts[parts.length - 1]);
+            }
 
             if (nom == null || nom.isBlank()) {
                 return ResponseEntity.badRequest().body("Le nom est requis");
             }
             if (categorieCode == null) {
-                return ResponseEntity.badRequest().body("Le code catégorie est requis");
+                return ResponseEntity.badRequest()
+                        .body("Le code catégorie est requis (utilisez 'categorieCode' ou 'categorie')");
             }
 
             // Récupérer la catégorie
@@ -219,7 +228,7 @@ public class MedicamentDeleteController {
      */
     @DeleteMapping("/{reference}")
     @Transactional
-    public ResponseEntity<String> supprimerMedicament(@PathVariable Integer reference) {
+    public ResponseEntity<?> supprimerMedicament(@PathVariable Integer reference) {
         try {
             log.info("Suppression du médicament {}", reference);
 
@@ -233,10 +242,14 @@ public class MedicamentDeleteController {
             medicamentRepository.deleteById(reference);
             log.info("Médicament {} et ses lignes supprimés avec succès", reference);
 
-            return ResponseEntity.ok("Médicament supprimé avec succès");
+            // Renvoyer 204 No Content (pas de body) pour compatibilité frontend
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Erreur lors de la suppression du médicament {}: {}", reference, e.getMessage(), e);
-            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+            // Renvoyer JSON pour les erreurs
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 }
