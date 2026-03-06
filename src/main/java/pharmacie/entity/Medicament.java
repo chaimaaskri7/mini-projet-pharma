@@ -77,7 +77,10 @@ public class Medicament {
 	@ToString.Exclude
 	private boolean indisponible = false;
 
-	@Column(length = 50000)
+	/**
+	 * URL de l'image du médicament (supporte base64 jusqu'à 50000 caractères)
+	 */
+	@Column(length = 50000, nullable = true)
 	private String imageURL;
 
 	@ToString.Exclude
