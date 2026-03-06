@@ -114,7 +114,6 @@ public class MedicamentDeleteController {
      * Accepte categorieCode directement au lieu d'une URL de catégorie
      */
     @PostMapping
-    @Transactional
     public ResponseEntity<?> creerMedicament(@RequestBody Map<String, Object> data) {
         try {
             log.info("Création d'un nouveau médicament: {}", data);
@@ -192,7 +191,6 @@ public class MedicamentDeleteController {
      * fournis
      */
     @PatchMapping("/{reference}")
-    @Transactional
     public ResponseEntity<?> modifierMedicament(@PathVariable Integer reference,
             @RequestBody Map<String, Object> updates) {
         try {
