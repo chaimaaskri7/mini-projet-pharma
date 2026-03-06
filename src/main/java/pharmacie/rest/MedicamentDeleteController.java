@@ -123,23 +123,26 @@ public class MedicamentDeleteController {
             String nom = (String) data.get("nom");
 
             // Accepter soit categorieCode (number) soit categorie (URL)
-            Integer categorieCode = null;
+            Integer tempCategorieCode = null;
             if (data.get("categorieCode") instanceof Number) {
-                categorieCode = ((Number) data.get("categorieCode")).intValue();
+                tempCategorieCode = ((Number) data.get("categorieCode")).intValue();
             } else if (data.get("categorie") instanceof String) {
                 // Extraire l'ID de l'URL: "https://.../api/categories/1" -> 1
                 String categorieUrl = (String) data.get("categorie");
                 String[] parts = categorieUrl.split("/");
-                categorieCode = Integer.parseInt(parts[parts.length - 1]);
+                tempCategorieCode = Integer.parseInt(parts[parts.length - 1]);
             }
 
             if (nom == null || nom.isBlank()) {
                 return ResponseEntity.badRequest().body("Le nom est requis");
             }
-            if (categorieCode == null) {
+            if (tempCategorieCode == null) {
                 return ResponseEntity.badRequest()
                         .body("Le code catégorie est requis (utilisez 'categorieCode' ou 'categorie')");
             }
+
+            // Variable finale pour utilisation dans lambda
+            final Integer categorieCode = tempCategorieCode;
 
             // Récupérer la catégorie
             Categorie categorie = categorieRepository.findById(categorieCode)
