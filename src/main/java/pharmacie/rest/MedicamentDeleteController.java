@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.persistence.EntityManager;
 import pharmacie.dao.MedicamentRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,14 +21,16 @@ public class MedicamentDeleteController {
     private static final Logger log = LoggerFactory.getLogger(MedicamentDeleteController.class);
 
     private final MedicamentRepository medicamentRepository;
+    private final EntityManager entityManager;
 
-    public MedicamentDeleteController(MedicamentRepository medicamentRepository) {
+    public MedicamentDeleteController(MedicamentRepository medicamentRepository, EntityManager entityManager) {
         this.medicamentRepository = medicamentRepository;
+        this.entityManager = entityManager;
     }
 
     /**
-     * Supprime un médicament et ses lignes associées
-     * Approche: charger le médic, vider les lignes, sauvegarder, puis supprimer
+     * Supprime un médicament et toutes ses lignes associées
+     * Utilise SQL natif pour supprimer les lignes directement sans cascade JPA
      */
     @Transactional
     @DeleteMapping("/{reference}")
@@ -35,22 +38,30 @@ public class MedicamentDeleteController {
         try {
             log.info("Suppression du médicament {}", reference);
 
-            // Étape 1: Charger le médicament avec ses lignes
-            var medicament = medicamentRepository.findById(reference)
-                    .orElseThrow(() -> new RuntimeException("Médicament non trouvé"));
+            if (!medicamentRepository.existsById(reference)) {
+                return ResponseEntity.notFound().build();
+            }
 
-            log.info("Médicament trouvé. Voici ses lignes: {}", medicament.getLignes().size());
+            // Étape 1: Supprimer TOUS les enregistrements LIGNE qui référencent ce
+            // médicament
+            // Utilise SQL natif pour contourner complètement les cascades JPA
+            int lignesDelete = entityManager
+                    .createNativeQuery("DELETE FROM LIGNE WHERE MEDICAMENT_REFERENCE = :ref")
+                    .setParameter("ref", reference)
+                    .executeUpdate();
 
-            // Étape 2: Vider la liste des lignes (déclenche orphanRemoval)
-            medicament.getLignes().clear();
+            log.info("Supprimé {} lignes avant suppression du médicament {}", lignesDelete, reference);
 
-            // Étape 3: Sauvegarder le médicament SANS ses lignes
-            medicamentRepository.save(medicament);
-            medicamentRepository.flush();
+            // Force la synchronisation avec la base de données
+            entityManager.flush();
 
-            log.info("Lignes supprimées via orphanRemoval");
+            // Étape 2: Vider la cache JPA pour ce médicament
+            var medicament = medicamentRepository.findById(reference);
+            if (medicament.isPresent()) {
+                entityManager.detach(medicament.get());
+            }
 
-            // Étape 4: Supprimer le médicament
+            // Étape 3: Supprimer le médicament lui-même
             medicamentRepository.deleteById(reference);
             medicamentRepository.flush();
 
