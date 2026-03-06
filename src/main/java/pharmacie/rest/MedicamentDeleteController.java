@@ -2,16 +2,20 @@ package pharmacie.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.transaction.annotation.Transactional;
 
+import pharmacie.dao.CategorieRepository;
 import pharmacie.dao.MedicamentRepository;
+import pharmacie.entity.Categorie;
 import pharmacie.entity.Medicament;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +30,77 @@ public class MedicamentDeleteController {
     private static final Logger log = LoggerFactory.getLogger(MedicamentDeleteController.class);
 
     private final MedicamentRepository medicamentRepository;
+    private final CategorieRepository categorieRepository;
 
-    public MedicamentDeleteController(MedicamentRepository medicamentRepository) {
+    public MedicamentDeleteController(MedicamentRepository medicamentRepository,
+            CategorieRepository categorieRepository) {
         this.medicamentRepository = medicamentRepository;
+        this.categorieRepository = categorieRepository;
+    }
+
+    /**
+     * Crée un nouveau médicament (POST)
+     * Accepte categorieCode directement au lieu d'une URL de catégorie
+     */
+    @PostMapping
+    @Transactional
+    public ResponseEntity<?> creerMedicament(@RequestBody Map<String, Object> data) {
+        try {
+            log.info("Création d'un nouveau médicament: {}", data);
+
+            // Extraire et valider les données
+            String nom = (String) data.get("nom");
+            Integer categorieCode = data.get("categorieCode") instanceof Number
+                    ? ((Number) data.get("categorieCode")).intValue()
+                    : null;
+
+            if (nom == null || nom.isBlank()) {
+                return ResponseEntity.badRequest().body("Le nom est requis");
+            }
+            if (categorieCode == null) {
+                return ResponseEntity.badRequest().body("Le code catégorie est requis");
+            }
+
+            // Récupérer la catégorie
+            Categorie categorie = categorieRepository.findById(categorieCode)
+                    .orElseThrow(() -> new RuntimeException("Catégorie non trouvée: " + categorieCode));
+
+            // Créer le médicament
+            Medicament med = new Medicament();
+            med.setNom(nom);
+            med.setCategorie(categorie);
+
+            // Champs optionnels
+            if (data.containsKey("quantiteParUnite")) {
+                med.setQuantiteParUnite((String) data.get("quantiteParUnite"));
+            }
+            if (data.containsKey("unitesEnStock")) {
+                med.setUnitesEnStock(((Number) data.get("unitesEnStock")).intValue());
+            }
+            if (data.containsKey("imageURL")) {
+                med.setImageURL((String) data.get("imageURL"));
+            }
+            if (data.containsKey("prixUnitaire")) {
+                med.setPrixUnitaire(BigDecimal.valueOf(((Number) data.get("prixUnitaire")).doubleValue()));
+            }
+            if (data.containsKey("unitesCommandees")) {
+                med.setUnitesCommandees(((Number) data.get("unitesCommandees")).intValue());
+            }
+            if (data.containsKey("niveauDeReappro")) {
+                med.setNiveauDeReappro(((Number) data.get("niveauDeReappro")).intValue());
+            }
+            if (data.containsKey("indisponible")) {
+                med.setIndisponible((Boolean) data.get("indisponible"));
+            }
+
+            Medicament saved = medicamentRepository.save(med);
+            log.info("Médicament créé avec succès: ID {}", saved.getReference());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (Exception e) {
+            log.error("Erreur lors de la création du médicament: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+        }
     }
 
     /**
