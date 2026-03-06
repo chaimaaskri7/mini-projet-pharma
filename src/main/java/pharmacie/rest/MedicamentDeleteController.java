@@ -15,6 +15,7 @@ import pharmacie.dao.MedicamentRepository;
 import pharmacie.entity.Medicament;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
@@ -52,7 +53,7 @@ public class MedicamentDeleteController {
                     case "quantiteParUnite" -> med.setQuantiteParUnite((String) value);
                     case "unitesEnStock" -> med.setUnitesEnStock(((Number) value).intValue());
                     case "imageURL" -> med.setImageURL((String) value);
-                    case "prixUnitaire" -> med.setPrixUnitaire(((Number) value).doubleValue());
+                    case "prixUnitaire" -> med.setPrixUnitaire(BigDecimal.valueOf(((Number) value).doubleValue()));
                     case "unitesCommandees" -> med.setUnitesCommandees(((Number) value).intValue());
                     case "niveauDeReappro" -> med.setNiveauDeReappro(((Number) value).intValue());
                     case "indisponible" -> med.setIndisponible((Boolean) value);
