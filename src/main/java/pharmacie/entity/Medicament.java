@@ -77,7 +77,7 @@ public class Medicament {
 	@ToString.Exclude
 	private boolean indisponible = false;
 
-	@Column(length = 500)
+	@Column(length = 50000)
 	private String imageURL;
 
 	@ToString.Exclude
@@ -99,97 +99,99 @@ public class Medicament {
 	/**
 	 * IMPORTANT: Vider les lignes AVANT la suppression pour éviter les conflits
 	 * de contrainte de clé étrangère bidirectionnelle. Ça fonctionne indépendamment
-	 * de la source de suppression (RestController, Spring Data REST, etc.)
+	 * de cascadeType. Voir
+	 * https://stackoverflow.com/questions/76044900/unsatisfieddependencyexception-error-creating-bean-named
 	 */
 	@PreRemove
 	public void preRemove() {
-		this.lignes.clear();
+		lignes.clear();
 	}
 
-	// Getters
 	public Integer getReference() {
 		return reference;
+	}
+
+	public void setReference(Integer reference) {
+		this.reference = reference;
 	}
 
 	public String getNom() {
 		return nom;
 	}
 
-	public String getQuantiteParUnite() {
-		return quantiteParUnite;
-	}
-
-	public BigDecimal getPrixUnitaire() {
-		return prixUnitaire;
-	}
-
-	public int getUnitesEnStock() {
-		return unitesEnStock;
-	}
-
-	public int getUnitesCommandees() {
-		return unitesCommandees;
-	}
-
-	public int getNiveauDeReappro() {
-		return niveauDeReappro;
-	}
-
-	public boolean isIndisponible() {
-		return indisponible;
-	}
-
-	public String getImageURL() {
-		return imageURL;
-	}
-
-	public Categorie getCategorie() {
-		return categorie;
-	}
-
-	public List<Ligne> getLignes() {
-		return lignes;
-	}
-
-	// Setters
 	public void setNom(String nom) {
 		this.nom = nom;
+	}
+
+	public String getQuantiteParUnite() {
+		return quantiteParUnite;
 	}
 
 	public void setQuantiteParUnite(String quantiteParUnite) {
 		this.quantiteParUnite = quantiteParUnite;
 	}
 
+	public BigDecimal getPrixUnitaire() {
+		return prixUnitaire;
+	}
+
 	public void setPrixUnitaire(BigDecimal prixUnitaire) {
 		this.prixUnitaire = prixUnitaire;
+	}
+
+	public int getUnitesEnStock() {
+		return unitesEnStock;
 	}
 
 	public void setUnitesEnStock(int unitesEnStock) {
 		this.unitesEnStock = unitesEnStock;
 	}
 
+	public int getUnitesCommandees() {
+		return unitesCommandees;
+	}
+
 	public void setUnitesCommandees(int unitesCommandees) {
 		this.unitesCommandees = unitesCommandees;
+	}
+
+	public int getNiveauDeReappro() {
+		return niveauDeReappro;
 	}
 
 	public void setNiveauDeReappro(int niveauDeReappro) {
 		this.niveauDeReappro = niveauDeReappro;
 	}
 
+	public boolean isIndisponible() {
+		return indisponible;
+	}
+
 	public void setIndisponible(boolean indisponible) {
 		this.indisponible = indisponible;
+	}
+
+	public String getImageURL() {
+		return imageURL;
 	}
 
 	public void setImageURL(String imageURL) {
 		this.imageURL = imageURL;
 	}
 
+	public Categorie getCategorie() {
+		return categorie;
+	}
+
 	public void setCategorie(Categorie categorie) {
 		this.categorie = categorie;
+	}
+
+	public List<Ligne> getLignes() {
+		return lignes;
 	}
 
 	public void setLignes(List<Ligne> lignes) {
 		this.lignes = lignes;
 	}
-
 }
