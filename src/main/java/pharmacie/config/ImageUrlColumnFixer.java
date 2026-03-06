@@ -26,10 +26,11 @@ public class ImageUrlColumnFixer {
 
                 // Essayer de modifier la colonne (marche si elle existe déjà)
                 try {
-                    stmt.execute("ALTER TABLE MEDICAMENT ALTER COLUMN IMAGEURL VARCHAR(50000)");
-                    log.info("✅ Colonne IMAGEURL modifiée avec succès -> VARCHAR(50000)");
+                    // Syntaxe PostgreSQL
+                    stmt.execute("ALTER TABLE medicament ALTER COLUMN imageurl TYPE VARCHAR(100000)");
+                    log.info("✅ Colonne imageurl modifiée avec succès -> VARCHAR(100000)");
                 } catch (Exception e) {
-                    log.info("⚠️ Table MEDICAMENT n'existe pas encore, sera créée par Hibernate avec la bonne taille");
+                    log.info("⚠️ Table medicament n'existe pas encore, sera créée par Hibernate avec la bonne taille");
                 }
 
             } catch (Exception e) {
