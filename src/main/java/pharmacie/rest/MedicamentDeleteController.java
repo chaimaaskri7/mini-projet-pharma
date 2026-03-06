@@ -5,11 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,8 @@ import pharmacie.entity.Medicament;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -36,6 +40,73 @@ public class MedicamentDeleteController {
             CategorieRepository categorieRepository) {
         this.medicamentRepository = medicamentRepository;
         this.categorieRepository = categorieRepository;
+    }
+
+    /**
+     * Récupère tous les médicaments (GET)
+     * Format compatible avec Spring Data REST pour le frontend
+     */
+    @GetMapping
+    public ResponseEntity<?> listerMedicaments() {
+        try {
+            List<Medicament> medicaments = medicamentRepository.findAll();
+
+            // Format Spring Data REST attendu par le frontend
+            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> embedded = new HashMap<>();
+            embedded.put("medicaments", medicaments);
+            response.put("_embedded", embedded);
+
+            log.info("Liste de {} médicaments retournée", medicaments.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Erreur lors de la récupération des médicaments: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Recherche des médicaments par nom (GET)
+     * Endpoint compatible avec Spring Data REST:
+     * /search/findByNomContainingIgnoreCase?nom=xxx
+     * IMPORTANT: Doit être AVANT GET /{reference} pour éviter que "search" soit
+     * capturé comme référence
+     */
+    @GetMapping("/search/findByNomContainingIgnoreCase")
+    public ResponseEntity<?> rechercherParNom(@RequestParam("nom") String nom) {
+        try {
+            List<Medicament> medicaments = medicamentRepository.findAll().stream()
+                    .filter(m -> m.getNom().toLowerCase().contains(nom.toLowerCase()))
+                    .toList();
+
+            // Format Spring Data REST
+            Map<String, Object> response = new HashMap<>();
+            Map<String, Object> embedded = new HashMap<>();
+            embedded.put("medicaments", medicaments);
+            response.put("_embedded", embedded);
+
+            log.info("Recherche '{}': {} résultats", nom, medicaments.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Erreur lors de la recherche: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Récupère un médicament par son ID (GET)
+     * IMPORTANT: Doit être APRÈS /search/... pour éviter les conflits de routing
+     */
+    @GetMapping("/{reference}")
+    public ResponseEntity<?> getMedicament(@PathVariable Integer reference) {
+        try {
+            Medicament med = medicamentRepository.findById(reference)
+                    .orElseThrow(() -> new RuntimeException("Médicament non trouvé: " + reference));
+            return ResponseEntity.ok(med);
+        } catch (Exception e) {
+            log.error("Erreur lors de la récupération du médicament {}: {}", reference, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erreur: " + e.getMessage());
+        }
     }
 
     /**
