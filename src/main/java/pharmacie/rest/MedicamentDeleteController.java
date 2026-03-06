@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.transaction.annotation.Transactional;
 
 import pharmacie.dao.MedicamentRepository;
-import pharmacie.dao.LigneRepository;
 import pharmacie.entity.Medicament;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,15 +21,13 @@ public class MedicamentDeleteController {
     private static final Logger log = LoggerFactory.getLogger(MedicamentDeleteController.class);
 
     private final MedicamentRepository medicamentRepository;
-    private final LigneRepository ligneRepository;
 
-    public MedicamentDeleteController(MedicamentRepository medicamentRepository, LigneRepository ligneRepository) {
+    public MedicamentDeleteController(MedicamentRepository medicamentRepository) {
         this.medicamentRepository = medicamentRepository;
-        this.ligneRepository = ligneRepository;
     }
 
     /**
-     * Supprime un médicament et ses lignes associées
+     * Supprime un médicament et ses lignes associées (via cascade)
      */
     @DeleteMapping("/{reference}")
     @Transactional
@@ -39,18 +36,18 @@ public class MedicamentDeleteController {
             log.info("Suppression du médicament {}", reference);
 
             Medicament med = medicamentRepository.findById(reference)
-                    .orElseThrow(() -> new RuntimeException("Médicament non trouvé"));
+                    .orElseThrow(() -> new RuntimeException("Médicament non trouvé avec la référence: " + reference));
 
-            // Supprimer les lignes d'abord
-            ligneRepository.deleteByMedicamentReference(reference);
+            // Vider la liste des lignes pour activer la cascade delete
+            med.getLignes().clear();
 
-            // Puis supprimer le médicament
+            // Supprimer le médicament (les lignes seront supprimées par cascade)
             medicamentRepository.deleteById(reference);
-            log.info("Médicament {} supprimé avec succès", reference);
+            log.info("Médicament {} et ses lignes supprimés avec succès", reference);
 
             return ResponseEntity.ok("Médicament supprimé avec succès");
         } catch (Exception e) {
-            log.error("Erreur suppression médicament {}: {}", reference, e.getMessage());
+            log.error("Erreur lors de la suppression du médicament {}: {}", reference, e.getMessage(), e);
             return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
         }
     }
