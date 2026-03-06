@@ -77,7 +77,7 @@ public class Medicament {
 	@ToString.Exclude
 	private boolean indisponible = false;
 
-	@Column(length = 500)
+	@Column(length = 50000)
 	private String imageURL;
 
 	@ToString.Exclude
